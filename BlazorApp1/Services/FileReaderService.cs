@@ -13,9 +13,9 @@ namespace BlazorApp1.Services
         {
             _fileReaders = new Dictionary<string, IFileReader>(StringComparer.OrdinalIgnoreCase)
             {
-                { ".csv", new CsvFileReader() },
+                // { ".csv", new CsvFileReader() },
                 { ".json", new JsonFileReader() },
-                { ".txt", new TxtFileReader() },
+                // { ".txt", new TxtFileReader() },
             };
         }
 

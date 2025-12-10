@@ -16,19 +16,34 @@ namespace BlazorApp1.Services
 
             if (data != null && data.Count > 0)
             {
-                var headers = new List<string>();
-                foreach (var key in data[0].Keys)
+                // Get all unique keys from all rows to handle rows with missing fields
+                var allKeys = new HashSet<string>();
+                foreach (var item in data)
                 {
-                    headers.Add(key);
+                    foreach (var key in item.Keys)
+                    {
+                        allKeys.Add(key);
+                    }
                 }
+
+                var headers = new List<string>(allKeys);
                 rows.Add(headers.ToArray());
 
+                // Build rows with all columns, using empty string for missing values
                 foreach (var dict in data)
                 {
                     var row = new List<string>();
                     foreach (var key in headers)
                     {
-                        row.Add(dict[key].ToString());
+                        // If key exists in this row, use its value; otherwise use empty string
+                        if (dict.ContainsKey(key))
+                        {
+                            row.Add(dict[key]?.ToString() ?? "");
+                        }
+                        else
+                        {
+                            row.Add("");
+                        }
                     }
                     rows.Add(row.ToArray());
                 }
