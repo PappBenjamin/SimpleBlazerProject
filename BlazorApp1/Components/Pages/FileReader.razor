@@ -1,0 +1,78 @@
+@page "/filereader"
+@using BlazorApp1.Services
+@inject FileReaderService FileReaderService
+@rendermode InteractiveServer
+
+<PageTitle>File Reader</PageTitle>
+
+<div class="file-input-container">
+    <InputFile id="file-input" OnChange="HandleFileSelected" class="file-input" />
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p class="error-message">@errorMessage</p>
+}
+
+@if (fileContent != null)
+{
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    @foreach (var header in fileContent.First())
+                    {
+                        <th>@header</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in fileContent.Skip(1))
+                {
+                    <tr>
+                        @foreach (var cell in row)
+                        {
+                            <td>@cell</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>
+        <em>Select a file to read its content.</em>
+    </p>
+}
+
+@code {
+    private List<string[]> fileContent;
+    private string errorMessage;
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        errorMessage = null; // Clear previous error messages
+
+        if (file != null)
+        {
+            Console.WriteLine($"File selected: {file.Name}");
+            try
+            {
+                using (var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10)) // 10 MB max file size
+                {
+                    fileContent = await FileReaderService.ReadFile(stream, file.Name);
+                    Console.WriteLine($"Read {fileContent.Count} rows from {file.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file: {ex.Message}");
+                errorMessage = $"Error reading file: {ex.Message}";
+                fileContent = null; // Clear the displayed content
+            }
+        }
+    }
+}
