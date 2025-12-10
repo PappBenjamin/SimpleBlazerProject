@@ -71,10 +71,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var (item, index) in filteredData.Select((item, idx) => (item, idx)))
+                            @foreach (var (item, displayIndex) in filteredData.Select((item, idx) => (item, idx)))
                             {
+                                // Find the actual index in allData
+                                var actualIndex = allData.IndexOf(item);
+                                
                                 <tr>
-                                    <td>@(index + 1)</td>
+                                    <td>@(displayIndex + 1)</td>
                                     @foreach (var col in GetDisplayColumns())
                                     {
                                         <td>
@@ -86,9 +89,9 @@
                                         </td>
                                     }
                                     <td>
-                                        <button class="btn btn-info btn-sm" @onclick="() => ViewItem(index)">View</button>
-                                        <button class="btn btn-warning btn-sm" @onclick="() => EditItem(index)">Edit</button>
-                                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(index)">Delete</button>
+                                        <button class="btn btn-info btn-sm" @onclick="() => ViewItem(actualIndex)">View</button>
+                                        <button class="btn btn-warning btn-sm" @onclick="() => EditItem(actualIndex)">Edit</button>
+                                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(actualIndex)">Delete</button>
                                     </td>
                                 </tr>
                             }
@@ -194,7 +197,14 @@
 
     protected override void OnInitialized()
     {
-        DataManagementService.ClearData();
+        // Don't clear data on page initialization - we want to preserve edits
+        // Only load data if allData is null (first time visiting)
+        if (allData == null)
+        {
+            allData = DataManagementService.GetAllData();
+            columnNames = DataManagementService.GetColumnNames();
+            filteredData = allData;
+        }
     }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)

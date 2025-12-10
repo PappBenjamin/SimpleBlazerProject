@@ -7,9 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddSingleton<FileReaderService>();
-builder.Services.AddScoped<HttpClient>();
-builder.Services.AddScoped<ImageHandlingService>();
-builder.Services.AddScoped<DataManagementService>();
+builder.Services.AddSingleton<HttpClient>();
+builder.Services.AddSingleton<ImageHandlingService>();
+builder.Services.AddSingleton<DataManagementService>();
 
 var app = builder.Build();
 

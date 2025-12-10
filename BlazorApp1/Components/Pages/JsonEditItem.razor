@@ -1,0 +1,138 @@
+@page "/json-edit-item/{Index:int}"
+@using BlazorApp1.Services
+@inject DataManagementService DataManagementService
+@inject ImageHandlingService ImageHandlingService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Edit Item</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            @if (item != null)
+            {
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">Edit Item</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                @errorMessage
+                                <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                            </div>
+                        }
+
+                        <form @onsubmit="SaveChanges">
+                            @foreach (var kvp in item)
+                            {
+                                var isImageUrl = ImageHandlingService.LooksLikeImageUrl(kvp.Value?.ToString() ?? "");
+                                var stringValue = kvp.Value?.ToString() ?? "";
+                                var key = kvp.Key;
+                                
+                                <div class="mb-3">
+                                    <label for="@key" class="form-label">@key</label>
+                                    
+                                    @if (isImageUrl)
+                                    {
+                                        <div class="mb-2">
+                                            <img src="@stringValue" alt="@key" class="img-fluid" style="max-width: 300px; height: auto; border-radius: 5px;" />
+                                        </div>
+                                        <input type="text" 
+                                               id="@key" 
+                                               class="form-control" 
+                                               value="@stringValue"
+                                               @onchange="@((ChangeEventArgs e) => UpdateItemValue(key, e.Value?.ToString() ?? ""))"
+                                               placeholder="Enter image URL" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" 
+                                               id="@key" 
+                                               class="form-control" 
+                                               value="@stringValue"
+                                               @onchange="@((ChangeEventArgs e) => UpdateItemValue(key, e.Value?.ToString() ?? ""))"
+                                               placeholder="Enter value for @key" />
+                                    }
+                                </div>
+                            }
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-success">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @errorMessage
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">Loading item...</div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Index { get; set; }
+
+    private Dictionary<string, object> item;
+    private string errorMessage;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            var loadedItem = DataManagementService.GetItemByIndex(Index);
+            // Create a copy to avoid modifying the original until save
+            item = new Dictionary<string, object>(loadedItem);
+        }
+        catch (IndexOutOfRangeException)
+        {
+            errorMessage = $"Item with index {Index} not found.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading item: {ex.Message}";
+        }
+    }
+
+    private void SaveChanges()
+    {
+        try
+        {
+            errorMessage = null;
+            DataManagementService.UpdateItem(Index, item);
+            NavigationManager.NavigateTo("/json-data");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving changes: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/json-data");
+    }
+
+    private void UpdateItemValue(string key, string value)
+    {
+        if (item.ContainsKey(key))
+        {
+            item[key] = value;
+        }
+    }
+}
