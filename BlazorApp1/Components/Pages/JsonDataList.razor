@@ -63,8 +63,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
-                                <th>@(columnNames.FirstOrDefault() ?? "Name")</th>
-                                @foreach (var col in columnNames.Skip(1).Take(2))
+                                @foreach (var col in GetDisplayColumns())
                                 {
                                     <th>@col</th>
                                 }
@@ -76,29 +75,13 @@
                             {
                                 <tr>
                                     <td>@(index + 1)</td>
-                                    <td>
-                                        @if (columnNames.Any())
-                                        {
-                                            @if (item.ContainsKey(columnNames[0]))
-                                            {
-                                                <strong>@item[columnNames[0]]?.ToString()</strong>
-                                            }
-                                        }
-                                    </td>
-                                    @foreach (var col in columnNames.Skip(1).Take(2))
+                                    @foreach (var col in GetDisplayColumns())
                                     {
                                         <td>
                                             @if (item.ContainsKey(col))
                                             {
                                                 var value = item[col]?.ToString() ?? "";
-                                                @if (ImageHandlingService.LooksLikeImageUrl(value))
-                                                {
-                                                    <a href="@value" target="_blank" class="btn btn-sm btn-outline-primary">View Image</a>
-                                                }
-                                                else
-                                                {
-                                                    <span>@(value.Length > 50 ? value.Substring(0, 50) + "..." : value)</span>
-                                                }
+                                                <span>@(value.Length > 50 ? value.Substring(0, 50) + "..." : value)</span>
                                             }
                                         </td>
                                     }
@@ -143,19 +126,24 @@
                 <div class="modal-body">
                     @foreach (var kvp in selectedItem)
                     {
-                        <div class="mb-3">
-                            <label class="form-label"><strong>@kvp.Key</strong></label>
-                            @if (ImageHandlingService.LooksLikeImageUrl(kvp.Value?.ToString() ?? ""))
-                            {
+                        var isImageUrl = ImageHandlingService.LooksLikeImageUrl(kvp.Value?.ToString() ?? "");
+                        
+                        @if (isImageUrl)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label"><strong>@kvp.Key</strong></label>
                                 <div>
                                     <img src="@kvp.Value" alt="@kvp.Key" class="img-fluid" style="max-width: 100%; height: auto; border-radius: 5px;" />
                                 </div>
-                            }
-                            else
-                            {
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label class="form-label"><strong>@kvp.Key</strong></label>
                                 <p class="form-control-plaintext">@kvp.Value</p>
-                            }
-                        </div>
+                            </div>
+                        }
                     }
                 </div>
                 <div class="modal-footer">
@@ -356,5 +344,11 @@
     protected override void OnParametersSet()
     {
         filteredData = FilterData();
+    }
+
+    private IEnumerable<string> GetDisplayColumns()
+    {
+        // Exclude image columns from display
+        return columnNames.Where(col => !ImageHandlingService.IsImageColumn(col));
     }
 }

@@ -157,5 +157,28 @@ namespace BlazorApp1.Services
             // Check if it's just an image extension
             return ImageExtensions.Any(ext => value.EndsWith(ext));
         }
+
+        /// <summary>
+        /// Detects if a column name is likely an image column
+        /// </summary>
+        public bool IsImageColumn(string columnName)
+        {
+            if (string.IsNullOrWhiteSpace(columnName))
+                return false;
+
+            var lowerName = columnName.ToLower().Trim();
+            
+            // Common image column names
+            var imageColumnNames = new[] 
+            { 
+                "image", "img", "photo", "picture", 
+                "imageurl", "image_url", "img_url", 
+                "photourl", "photo_url", "pictureurl", "picture_url",
+                "thumbnail", "avatar", "icon", "logo",
+                "image_link", "imagelink"
+            };
+
+            return imageColumnNames.Contains(lowerName);
+        }
     }
 }

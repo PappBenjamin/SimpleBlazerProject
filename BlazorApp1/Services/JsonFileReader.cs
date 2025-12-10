@@ -18,6 +18,7 @@ namespace BlazorApp1.Services
             {
                 // Get all unique keys from all rows to handle rows with missing fields
                 var allKeys = new HashSet<string>();
+                
                 foreach (var item in data)
                 {
                     foreach (var key in item.Keys)
