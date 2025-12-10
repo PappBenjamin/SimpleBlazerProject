@@ -77,3 +77,4 @@
 /Users/macbook/Documents/III. ev/Dotnet/BlazorApp1/BlazorApp1/obj/Debug/net9.0/scopedcss/Components/Pages/FileReader.razor.rz.scp.css
 /Users/macbook/Documents/III. ev/Dotnet/BlazorApp1/BlazorApp1/obj/Debug/net9.0/compressed/ysu4imbah3-tlqjlbrb1b.gz
 /Users/macbook/Documents/III. ev/Dotnet/BlazorApp1/BlazorApp1/obj/Debug/net9.0/compressed/uxxncn5hnr-tlqjlbrb1b.gz
+/Users/macbook/Documents/III. ev/Dotnet/BlazorApp1/BlazorApp1/obj/Debug/net9.0/BlazorApp1.sourcelink.json

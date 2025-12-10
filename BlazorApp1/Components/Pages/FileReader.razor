@@ -2,6 +2,8 @@
 @using BlazorApp1.Services
 @inject FileReaderService FileReaderService
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>File Reader</PageTitle>
 
@@ -16,25 +18,42 @@
 
 @if (fileContent != null)
 {
+    <div class="search-bar-container">
+        <InputText @bind-Value="searchTerm" placeholder="Search by name..." class="form-control" />
+    </div>
+
     <div class="table-container">
         <table class="table">
             <thead>
                 <tr>
-                    @foreach (var header in fileContent.First())
-                    {
-                        <th>@header</th>
-                    }
+                    <th>Name</th>
+                    <th>Details</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var row in fileContent.Skip(1))
+                @foreach (var row in FilteredContent)
                 {
                     <tr>
-                        @foreach (var cell in row)
-                        {
-                            <td>@cell</td>
-                        }
+                        <td>@row.First()</td>
+                        <td>
+                            <button @onclick="(() => ToggleDetails(row))" class="btn btn-info btn-sm">
+                                @(expandedRows.Contains(row) ? "Hide Details" : "Show Details")
+                            </button>
+                        </td>
                     </tr>
+                    @if (expandedRows.Contains(row))
+                    {
+                        <tr>
+                            <td colspan="2">
+                                <div class="details-container">
+                                    @for (int i = 0; i < row.Length - 1; i++)
+                                    {
+                                        <p>@fileContent.First()[i + 1]: @row.Skip(1).ElementAt(i)</p>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
@@ -50,6 +69,37 @@ else
 @code {
     private List<string[]> fileContent;
     private string errorMessage;
+    private string searchTerm = string.Empty;
+    private HashSet<string[]> expandedRows = new HashSet<string[]>();
+
+    private IEnumerable<string[]> FilteredContent
+    {
+        get
+        {
+            if (fileContent == null || !fileContent.Any()) return Enumerable.Empty<string[]>();
+
+            var dataRows = fileContent.Skip(1);
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return dataRows;
+            }
+
+            return dataRows.Where(row => row.Any() && row.First().Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private void ToggleDetails(string[] row)
+    {
+        if (expandedRows.Contains(row))
+        {
+            expandedRows.Remove(row);
+        }
+        else
+        {
+            expandedRows.Add(row);
+        }
+    }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -64,6 +114,7 @@ else
                 using (var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10)) // 10 MB max file size
                 {
                     fileContent = await FileReaderService.ReadFile(stream, file.Name);
+                    expandedRows.Clear(); // Clear expanded rows on new file selection
                     Console.WriteLine($"Read {fileContent.Count} rows from {file.Name}");
                 }
             }
@@ -72,6 +123,7 @@ else
                 Console.WriteLine($"Error reading file: {ex.Message}");
                 errorMessage = $"Error reading file: {ex.Message}";
                 fileContent = null; // Clear the displayed content
+                expandedRows.Clear(); // Clear expanded rows on error
             }
         }
     }
