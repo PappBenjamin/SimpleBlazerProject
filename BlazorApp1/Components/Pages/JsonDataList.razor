@@ -12,7 +12,7 @@
 <div class="container-fluid mt-4">
     <h1>JSON Data Manager</h1>
 
-    <!-- File Upload Section -->
+    <!-- File upload form -->
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Upload JSON File</h5>
@@ -21,6 +21,7 @@
             <div class="mb-3">
                 <InputFile OnChange="HandleFileSelected" accept=".json" class="form-control" />
             </div>
+            
             @if (!string.IsNullOrEmpty(errorMessage))
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -28,6 +29,7 @@
                     <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
                 </div>
             }
+            
             @if (!string.IsNullOrEmpty(successMessage))
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -38,7 +40,7 @@
         </div>
     </div>
 
-    <!-- Data Management Section -->
+    <!-- Data table section - shows when data is loaded -->
     @if (allData != null && allData.Count > 0)
     {
         <div class="card mb-4">
@@ -52,12 +54,12 @@
                 </div>
             </div>
             <div class="card-body">
-                <!-- Search Section -->
+                <!-- Search box -->
                 <div class="mb-3">
-                    <InputText @bind-Value="searchTerm" placeholder="Search in all fields..." class="form-control" />
+                    <InputText @bind-Value="searchTerm" @oninput="HandleSearchInput" placeholder="Search in all fields..." class="form-control" />
                 </div>
 
-                <!-- Data Table -->
+                <!-- Data table -->
                 <div class="table-responsive">
                     <table class="table table-hover table-striped">
                         <thead class="table-dark">
@@ -73,11 +75,12 @@
                         <tbody>
                             @foreach (var (item, displayIndex) in filteredData.Select((item, idx) => (item, idx)))
                             {
-                                // Find the actual index in allData
+                                // Find the real index in the full dataset (important for search)
                                 var actualIndex = allData.IndexOf(item);
                                 
                                 <tr>
                                     <td>@(displayIndex + 1)</td>
+                                    
                                     @foreach (var col in GetDisplayColumns())
                                     {
                                         <td>
@@ -88,6 +91,7 @@
                                             }
                                         </td>
                                     }
+                                    
                                     <td>
                                         <button class="btn btn-info btn-sm" @onclick="() => ViewItem(actualIndex)">View</button>
                                         <button class="btn btn-warning btn-sm" @onclick="() => EditItem(actualIndex)">Edit</button>
@@ -116,7 +120,7 @@
     }
 </div>
 
-<!-- View Details Modal -->
+<!-- View item details modal -->
 @if (selectedItem != null && showViewModal)
 {
     <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
@@ -157,7 +161,7 @@
     </div>
 }
 
-<!-- Delete Confirmation Modal -->
+<!-- Delete confirmation modal -->
 @if (showDeleteConfirm && deleteIndex >= 0)
 {
     <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
@@ -184,21 +188,33 @@
 }
 
 @code {
+    // Data from uploaded file
     private List<Dictionary<string, object>> allData;
+    
+    // Filtered data from search
     private List<Dictionary<string, object>> filteredData;
+    
+    // Column headers
     private List<string> columnNames = new();
+    
+    // Selected item for modals
     private Dictionary<string, object> selectedItem;
+    
+    // Search input
     private string searchTerm = string.Empty;
+    
+    // Messages
     private string errorMessage;
     private string successMessage;
+    
+    // Modal states
     private bool showViewModal;
     private bool showDeleteConfirm;
     private int deleteIndex = -1;
 
+    // Load data from service on page init
     protected override void OnInitialized()
     {
-        // Don't clear data on page initialization - we want to preserve edits
-        // Only load data if allData is null (first time visiting)
         if (allData == null)
         {
             allData = DataManagementService.GetAllData();
@@ -207,6 +223,7 @@
         }
     }
 
+    // Read uploaded file
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         try
@@ -228,7 +245,6 @@
                     return;
                 }
 
-                // Convert to list of dictionaries
                 var headers = fileContent[0];
                 var dataList = new List<Dictionary<string, object>>();
 
@@ -249,7 +265,8 @@
                 allData = DataManagementService.GetAllData();
                 columnNames = DataManagementService.GetColumnNames();
                 filteredData = allData;
-                successMessage = $"Successfully loaded @allData.Count items from {file.Name}";
+                
+                successMessage = $"Successfully loaded {allData.Count} items from {file.Name}";
             }
         }
         catch (Exception ex)
@@ -259,6 +276,7 @@
         }
     }
 
+    // Show item details
     private void ViewItem(int index)
     {
         try
@@ -272,11 +290,13 @@
         }
     }
 
+    // Navigate to edit page
     private void EditItem(int index)
     {
         NavigationManager.NavigateTo($"/json-edit-item/{index}");
     }
 
+    // Show delete confirmation
     private void ConfirmDelete(int index)
     {
         deleteIndex = index;
@@ -284,6 +304,7 @@
         showDeleteConfirm = true;
     }
 
+    // Cancel delete
     private void CancelDelete()
     {
         showDeleteConfirm = false;
@@ -291,6 +312,7 @@
         selectedItem = null;
     }
 
+    // Actually delete the item
     private void ConfirmDeleteAction()
     {
         try
@@ -309,18 +331,19 @@
         }
     }
 
+    // Close view modal
     private void CloseViewModal()
     {
         showViewModal = false;
         selectedItem = null;
     }
 
+    // Export as JSON
     private void ExportToJson()
     {
         try
         {
             var json = DataManagementService.ExportToJson();
-            // In a real app, you'd trigger a download here
             successMessage = "Export prepared (implement download in production)";
         }
         catch (Exception ex)
@@ -329,12 +352,12 @@
         }
     }
 
+    // Export as CSV
     private void ExportToCsv()
     {
         try
         {
             var csv = DataManagementService.ExportToCsv();
-            // In a real app, you'd trigger a download here
             successMessage = "Export prepared (implement download in production)";
         }
         catch (Exception ex)
@@ -343,6 +366,7 @@
         }
     }
 
+    // Filter data based on search
     private List<Dictionary<string, object>> FilterData()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -351,14 +375,16 @@
         return DataManagementService.SearchMultipleColumns(searchTerm);
     }
 
-    protected override void OnParametersSet()
+    // Handle search term input (fires as user types)
+    private void HandleSearchInput(ChangeEventArgs e)
     {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
         filteredData = FilterData();
     }
 
+    // Get columns to display (exclude image columns)
     private IEnumerable<string> GetDisplayColumns()
     {
-        // Exclude image columns from display
         return columnNames.Where(col => !ImageHandlingService.IsImageColumn(col));
     }
 }

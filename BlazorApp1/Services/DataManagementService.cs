@@ -5,8 +5,13 @@ using System.Text.Json;
 
 namespace BlazorApp1.Services
 {
+    /// <summary>
+    /// Stores and manages all JSON data in memory as a Singleton.
+    /// All CRUD operations (Create, Read, Update, Delete) go through this service.
+    /// </summary>
     public class DataManagementService
     {
+        // The main data storage
         private List<Dictionary<string, object>> _currentData;
 
         public DataManagementService()
@@ -14,25 +19,19 @@ namespace BlazorApp1.Services
             _currentData = new List<Dictionary<string, object>>();
         }
 
-        /// <summary>
-        /// Initializes the service with JSON data
-        /// </summary>
+        // Load data from uploaded file
         public void InitializeData(List<Dictionary<string, object>> data, string fileName)
         {
             _currentData = new List<Dictionary<string, object>>(data);
         }
 
-        /// <summary>
-        /// Gets all current data
-        /// </summary>
+        // Get all data
         public List<Dictionary<string, object>> GetAllData()
         {
             return new List<Dictionary<string, object>>(_currentData);
         }
 
-        /// <summary>
-        /// Gets a specific item by index
-        /// </summary>
+        // Get one item by index
         public Dictionary<string, object> GetItemByIndex(int index)
         {
             if (index < 0 || index >= _currentData.Count)
@@ -41,17 +40,13 @@ namespace BlazorApp1.Services
             return new Dictionary<string, object>(_currentData[index]);
         }
 
-        /// <summary>
-        /// Gets the total count of items
-        /// </summary>
+        // Get total count
         public int GetItemCount()
         {
             return _currentData.Count;
         }
 
-        /// <summary>
-        /// Adds a new item to the data
-        /// </summary>
+        // Add new item
         public int AddItem(Dictionary<string, object> item)
         {
             if (item == null)
@@ -61,9 +56,7 @@ namespace BlazorApp1.Services
             return _currentData.Count - 1;
         }
 
-        /// <summary>
-        /// Updates an existing item by index
-        /// </summary>
+        // Update existing item
         public void UpdateItem(int index, Dictionary<string, object> updatedItem)
         {
             if (index < 0 || index >= _currentData.Count)
@@ -75,9 +68,7 @@ namespace BlazorApp1.Services
             _currentData[index] = new Dictionary<string, object>(updatedItem);
         }
 
-        /// <summary>
-        /// Deletes an item by index
-        /// </summary>
+        // Delete item by index
         public void DeleteItem(int index)
         {
             if (index < 0 || index >= _currentData.Count)
@@ -86,9 +77,7 @@ namespace BlazorApp1.Services
             _currentData.RemoveAt(index);
         }
 
-        /// <summary>
-        /// Filters data by a specific column and value
-        /// </summary>
+        // Filter by column value
         public List<Dictionary<string, object>> FilterByColumn(string columnName, string value)
         {
             return _currentData
@@ -97,9 +86,7 @@ namespace BlazorApp1.Services
                 .ToList();
         }
 
-        /// <summary>
-        /// Searches across multiple columns
-        /// </summary>
+        // Search across all columns
         public List<Dictionary<string, object>> SearchMultipleColumns(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
@@ -111,9 +98,7 @@ namespace BlazorApp1.Services
                 .ToList();
         }
 
-        /// <summary>
-        /// Sorts data by a specific column
-        /// </summary>
+        // Sort by column
         public List<Dictionary<string, object>> SortByColumn(string columnName, bool ascending = true)
         {
             if (string.IsNullOrWhiteSpace(columnName) || !_currentData.Any())
@@ -132,15 +117,11 @@ namespace BlazorApp1.Services
                 sorted = sorted.OrderByDescending(item => item[columnName], new CustomComparer()).ToList();
             }
 
-            // Add items that don't have the column at the end
             sorted.AddRange(_currentData.Where(item => !item.ContainsKey(columnName)));
-
             return sorted;
         }
 
-        /// <summary>
-        /// Gets distinct values for a column
-        /// </summary>
+        // Get unique values in a column
         public List<string> GetDistinctValues(string columnName)
         {
             return _currentData
@@ -152,9 +133,7 @@ namespace BlazorApp1.Services
                 .ToList();
         }
 
-        /// <summary>
-        /// Gets all column names from the data
-        /// </summary>
+        // Get all column names
         public List<string> GetColumnNames()
         {
             if (!_currentData.Any())
@@ -163,18 +142,14 @@ namespace BlazorApp1.Services
             return _currentData[0].Keys.ToList();
         }
 
-        /// <summary>
-        /// Exports current data to JSON format
-        /// </summary>
+        // Export to JSON format
         public string ExportToJson()
         {
             var options = new JsonSerializerOptions { WriteIndented = true };
             return JsonSerializer.Serialize(_currentData, options);
         }
 
-        /// <summary>
-        /// Exports current data to CSV format
-        /// </summary>
+        // Export to CSV format
         public string ExportToCsv()
         {
             if (!_currentData.Any())
@@ -183,10 +158,8 @@ namespace BlazorApp1.Services
             var columnNames = GetColumnNames();
             var csv = new System.Text.StringBuilder();
 
-            // Write header
             csv.AppendLine(string.Join(",", columnNames.Select(c => EscapeCsvValue(c))));
 
-            // Write data rows
             foreach (var item in _currentData)
             {
                 var row = columnNames.Select(col => 
@@ -197,9 +170,7 @@ namespace BlazorApp1.Services
             return csv.ToString();
         }
 
-        /// <summary>
-        /// Gets pagination of data
-        /// </summary>
+        // Get paged data
         public (List<Dictionary<string, object>> Items, int TotalPages) GetPagedData(int pageNumber, int pageSize)
         {
             if (pageNumber < 1 || pageSize < 1)
@@ -214,14 +185,13 @@ namespace BlazorApp1.Services
             return (items, totalPages);
         }
 
-        /// <summary>
-        /// Clears all data
-        /// </summary>
+        // Clear all data
         public void ClearData()
         {
             _currentData.Clear();
         }
 
+        // Escape CSV special characters
         private string EscapeCsvValue(string value)
         {
             if (string.IsNullOrEmpty(value))
@@ -235,7 +205,7 @@ namespace BlazorApp1.Services
             return value;
         }
 
-        // Custom comparer for sorting
+        // Custom comparer for sorting mixed data types
         private class CustomComparer : IComparer<object?>
         {
             public int Compare(object? x, object? y)
