@@ -2,6 +2,54 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-primary shadow-lg">
+                <div class="card-header bg-primary text-white py-4">
+                    <h1 class="mb-0">📋 BlazorApp1</h1>
+                </div>
+                <div class="card-body p-4">
+                    <h2 class="text-primary mb-3">Welcome to Your JSON Data Manager</h2>
+                    <p class="lead">A powerful Blazor application for managing, viewing, and exporting JSON data with ease.</p>
 
-Welcome to your new app.
+                    <hr class="my-4">
+
+                    <h3>Features</h3>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">📁 Upload and parse JSON files</li>
+                        <li class="list-group-item">👁️ View and inspect data in detail</li>
+                        <li class="list-group-item">📊 Export data to CSV or JSON formats</li>
+                        <li class="list-group-item">🗑️ Delete items with confirmation</li>
+                        <li class="list-group-item">⚡ Real-time error handling and feedback</li>
+                    </ul>
+
+                    <h3>Getting Started</h3>
+                    <p>Navigate to the <strong>JSON Data Manager</strong> page to:</p>
+                    <ol>
+                        <li>Upload your JSON file</li>
+                        <li>Browse and manage your data</li>
+                        <li>Export to your preferred format</li>
+                    </ol>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .btn-lg {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style>

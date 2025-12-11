@@ -358,6 +358,7 @@
         try
         {
             var csv = DataManagementService.ExportToCsv();
+            // Console.WriteLine(csv);
             successMessage = "Export prepared (implement download in production)";
         }
         catch (Exception ex)
