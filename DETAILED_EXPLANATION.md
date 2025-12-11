@@ -8,6 +8,7 @@ This is a Blazor Server application that allows you to:
 4. View detailed item information (with image previews)
 5. Edit items and save changes
 6. Delete items with confirmation
+7. Perform advanced statistical analysis on your data
 
 ---
 
@@ -289,6 +290,61 @@ Why this instead of `@bind`?
 
 ---
 
+### **AdvancedStatistics.razor** - Statistics Page (`/advanced-statistics`)
+
+#### **Purpose**: Perform advanced statistical analysis on loaded data
+
+#### **Three Analysis Types**:
+
+1. **Numerical Statistics** 📈
+   - Select a numeric column
+   - Calculates: Count, Sum, Average, Min, Max, Median, Standard Deviation
+   - Handles mixed data types (JsonElement, double, string)
+
+2. **Group By Analysis** 🏷️
+   - Select a "Group By Column" (categorical data like "category", "type", "brand")
+   - Select an "Aggregate Column" (numeric values like "price", "quantity", "rating")
+   - For each unique value in the Group By Column, calculates statistics on the Aggregate Column
+   - Shows: Count (how many items), Average, Min, Max per group
+   - Sorted by average (descending)
+
+3. **Top Values Analysis** 🏆
+   - Select any column
+   - Shows frequency of each value
+   - Configurable top N (default 10)
+   - Sortable: Highest/Lowest first
+
+#### **Data Flow**:
+```
+User loads data in /json-data
+    ↓
+Navigates to /advanced-statistics
+    ↓
+OnInitializedAsync() gets column names and record count
+    ↓
+User clicks analysis type button
+    ↓
+UI shows column selection buttons
+    ↓
+User selects columns → Calculate methods run
+    ↓
+Statistics displayed in tables
+```
+
+#### **Key Methods**:
+- `CalculateNumericalStatistics()` - Computes stats for numeric columns
+- `CalculateGroupByStatistics()` - Groups data and aggregates
+- `CalculateTopValues()` - Counts value frequencies
+- `TryGetDoubleValue()` - Safely converts to double (handles JsonElement)
+
+#### **Interactivity**:
+```razor
+@rendermode InteractiveServer
+```
+Required for `@onclick` events to work. Without it, component renders statically.
+
+---
+
 ## 🔄 Data Persistence Flow
 
 ### **Upload → Edit → Save → Display**:
@@ -458,4 +514,3 @@ When you click "View":
 ### PDF data conversion to json
 
 I used a python script to convert the PDF data into JSON format. The script extracts the relevant fields from the PDF and structures them into a JSON array of objects, each representing a car with its attributes.
-

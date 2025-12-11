@@ -24,6 +24,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/macbook/Documents/III. ev/Dotnet/BlazorApp1/BlazorApp1/Components/Pages/AdvancedStatistics.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZHZhbmNlZFN0YXRpc3RpY3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/macbook/Documents/III. ev/Dotnet/BlazorApp1/BlazorApp1/Components/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
